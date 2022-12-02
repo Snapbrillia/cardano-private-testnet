@@ -13,7 +13,7 @@ ROOT="$(config_get ROOT)";
 
 pushd ${ROOT}
 
-export CARDANO_NODE_SOCKET_PATH=node-bft1/node.sock
+export CARDANO_NODE_SOCKET_PATH=node-spo1/node.sock
 
 # find the greatest intput in the whole utxo and use it
 GREATEST_INPUT=$(cardano-cli query utxo --whole-utxo --testnet-magic 42 | tail -n +3 | awk '{printf "%s#%s %s \n", $1 , $2, $3}' | sort -rn -k2 | head -n1)
@@ -24,15 +24,11 @@ COINS_IN_INPUT=$(echo ${GREATEST_INPUT} | awk '{print $2}')
 echo "Using ${TXID0}, containing ${COINS_IN_INPUT} lovelace"
 
 cardano-cli transaction build-raw \
---alonzo-era \
+--babbage-era \
 --fee ${FEE} \
             --tx-in ${TXID0}\
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2)) \
             --tx-out $(cat addresses/user1.addr)+$((${COINS_IN_INPUT} / 2 - ${FEE})) \
-            --certificate-file addresses/pool-owner1-stake.reg.cert \
-            --certificate-file node-pool1/registration.cert \
-            --certificate-file addresses/user1-stake.reg.cert \
-            --certificate-file addresses/user1-stake.deleg.cert \
             --out-file tx2.txbody
 
 cardano-cli transaction sign \
